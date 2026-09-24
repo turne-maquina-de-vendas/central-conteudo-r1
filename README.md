@@ -81,7 +81,22 @@ dados/backup-*.json    export dos dados no dia da migração
 
 ## Manutenção
 
-**O acervo se atualiza sozinho** por um Apps Script rodando de hora em hora na
+**O acervo se atualiza sozinho** a cada 2 horas, por um cron da Vercel que fala
+com a API do Drive (`/api/sincronizar-drive`). Precisa de **`GOOGLE_API_KEY`** nas
+variáveis de ambiente.
+
+A varredura anda em passos: a árvore tem ~1.000 pastas e não cabe numa
+execução serverless. Cada rodada trabalha ~45s, guarda a fila no banco e para;
+a seguinte continua. O passo incremental só desce em pasta que mudou desde a
+última sincronização, então acaba em segundos. Para recomeçar do zero:
+`/api/sincronizar-drive?tudo=1`.
+
+⚠️ **A chave de API só enxerga a pasta mãe**, porque ela está compartilhada por
+link. O Drive **"EVENTOS E LIVES - LINK P/ FORNECEDORES"** (`0AG9trcmEgnm7Uk9PVA`)
+é restrito: chave de API devolve lista vazia e o crawler leva 401. Para trazer
+esse também, o caminho é o Apps Script abaixo, que roda como uma pessoa do time.
+
+**Alternativa que alcança os dois Drives**: Apps Script de hora em hora na
 conta de alguém do time. Ele varre o Drive e manda o que mudou para
 `POST /api/acervo`; a tela lê de `GET /api/acervo`, com o `acervo.json`
 estático de rede de segurança se a API cair.
