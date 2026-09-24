@@ -628,6 +628,15 @@ select.pick:hover{border-color:var(--line-strong)}
 .pn-ir:hover{color:var(--white); border-color:var(--line-strong)}
 
 
+
+.fontes{display:flex; flex-wrap:wrap; gap:6px; align-items:center; padding:11px 15px; border-bottom:1px solid var(--line)}
+.fontes .lb{font-size:9.5px; font-weight:800; letter-spacing:.11em; text-transform:uppercase; color:var(--gray-dim); margin-right:3px}
+.fonte-lk{
+  font-size:11px; font-weight:700; color:var(--gray); text-decoration:none;
+  border:1px solid var(--line); border-radius:6px; padding:4px 10px; transition:.14s ease; white-space:nowrap;
+}
+.fonte-lk:hover{color:var(--white); border-color:var(--line-strong); background:var(--panel-2)}
+
 /* ---------------- CONTEÚDO OURO ---------------- */
 :root{ --ouro:#e8b923; --ouro-claro:#ffd966; }
 .vd.ouro{border-color:var(--ouro); box-shadow:0 0 0 1px var(--ouro), 0 0 14px rgba(232,185,35,.22)}
@@ -903,7 +912,7 @@ tr.ouro td:first-child{box-shadow:inset 3px 0 0 var(--ouro)}
         <textarea id="f_head" placeholder="O QUE ELE FALA, NA LATA&#10;UMA LINHA POR IDEIA" style="min-height:76px"></textarea>
       </div>
       <div class="par">
-        <div class="fld"><label for="f_edit">Editoria</label><input id="f_edit" list="l_tema" autocomplete="off"></div>
+        <div class="fld"><label for="f_edit">Editoria <span style="color:var(--red)">*</span></label><input id="f_edit" list="l_tema" autocomplete="off" required placeholder="obrigatório — é a tag da busca"></div>
         <div class="fld"><label for="f_prod">Produto</label><select id="f_prod"></select></div>
       </div>
       <div class="fld" style="max-width:260px"><label for="f_minut">Minutado por</label><input id="f_minut" list="l_pes" autocomplete="off"></div>
@@ -1218,9 +1227,17 @@ tr.ouro td:first-child{box-shadow:inset 3px 0 0 var(--ouro)}
     {id:"1TMUQ9z7627WmqgbOnPoOXcHJ6OwkcrBX", num:"10", nome:"Podcasts",
      caminhos:["[FD] PODCAST"], termos:["podcast"]},
     {id:"1-yYD5csQxjQsYAfyWS46spbipNR8MukP", num:"11", nome:"RGVs",
-     caminhos:["[FD] RGV"], termos:["pgm rgv"]},
+     caminhos:["[FD] RGV"], termos:["pgm rgv"],
+     links:[{n:"PGM RGV 41", id:"1hisbkCLufqOFG2dVaKQpnUiz3tutpyh1"},
+            {n:"PGM RGV 42", id:"15FjuH7j-qJ_sQi31KuPg6WniP-0AAIVN"},
+            {n:"PGM RGV 43", id:"19WDcXi4GTBaf5fQaCUv7AkDnrlEtXTb_"},
+            {n:"RGV Processos", id:"16PNWn0d0Wp4q00n_cb7Eh_l8nU512vgy"}]},
     {id:"1Po-x6k0ejMM36Ljts4BMY1rw13VGW8ym", num:"12", nome:"Clube R1",
-     caminhos:["[FD] CLUBE R1"], termos:["clube r1","preço do tempo","preco do tempo"]}
+     caminhos:["[FD] CLUBE R1"], termos:["clube r1","preço do tempo","preco do tempo"],
+     links:[{n:"O Preço do Tempo", id:"1AzK-wnq1PBQFQ2zj5BHZ-L-VS7w-cH67"}]},
+    {id:"1cowje1vo1_ei9ouIbXJ41t9tmrCc23mQ", num:"13", nome:"Lives",
+     caminhos:["[FD] LIVES"], termos:["live "],
+     links:[{n:"Live MDV 13/7", id:"1cowje1vo1_ei9ouIbXJ41t9tmrCc23mQ"}]}
   ];
   var $=function(id){return document.getElementById(id);};
   var urlPasta=function(id){ return "https://drive.google.com/drive/folders/"+id; };
@@ -1304,6 +1321,7 @@ tr.ouro td:first-child{box-shadow:inset 3px 0 0 var(--ouro)}
     $("vTipo").textContent=p.num==="00" ? "Entrada — ainda sem trecho marcado" : "Pasta de tema";
     $("vLink").href=urlPasta(p.id);
 
+    var antL=document.querySelector(".fontes"); if(antL) antL.remove();
     var ant=document.querySelector(".termos"); if(ant) ant.remove();
     if(p.num!=="00"){
       var tb=document.createElement("div"); tb.className="termos";
@@ -1316,6 +1334,20 @@ tr.ouro td:first-child{box-shadow:inset 3px 0 0 var(--ouro)}
       });
       p.termos.forEach(function(t){ var e=document.createElement("span"); e.className="termo"; e.textContent=t; tb.appendChild(e); });
       $("visor").insertBefore(tb, corpo);
+    }
+
+    if(p.links && p.links.length){
+      var lb=document.createElement("div"); lb.className="fontes";
+      var t0=document.createElement("span"); t0.className="lb"; t0.textContent="Pastas no Drive";
+      lb.appendChild(t0);
+      p.links.forEach(function(l){
+        var a=document.createElement("a");
+        a.className="fonte-lk"; a.href=urlPasta(l.id);
+        a.target="_blank"; a.rel="noopener noreferrer";
+        a.textContent=l.n+" ↗";
+        lb.appendChild(a);
+      });
+      $("visor").insertBefore(lb, corpo);
     }
 
     if(!window.R1 || !window.R1.pronto()){
@@ -1859,6 +1891,10 @@ tr.ouro td:first-child{box-shadow:inset 3px 0 0 var(--ouro)}
     if(a===null) return erro("A minutagem de início precisa estar no formato h:mm:ss.");
     if(b===null) return erro("A minutagem final precisa estar no formato h:mm:ss.");
     if(b<=a) return erro("O final tem que vir depois do início.");
+    if(!$("f_edit").value.trim()){
+      $("f_edit").focus();
+      return erro("A editoria é obrigatória — é ela que faz o trecho aparecer na busca e na pasta certa.");
+    }
     var doc={ id: editando?editando.id:("C-"+Date.now().toString(36).toUpperCase()),
       brutoId: atual.i, brutoNome: atual.t,
       brutoLink: atual.novo?atual.link:("https://drive.google.com/file/d/"+atual.i+"/view"),
