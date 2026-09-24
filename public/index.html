@@ -1211,7 +1211,16 @@ tr.ouro td:first-child{box-shadow:inset 3px 0 0 var(--ouro)}
     {id:"1wdwYVhyrGPcocAtd35SEyOPImP2vf6bz", num:"08", nome:"Palestrantes",
      termos:["palestr","evento","congresso"]},
     {id:"1CXJy-bhZipEaUdhx_oVP7yk_886MZFFf", num:"09", nome:"De Frente com Ricardo",
-     termos:["de frente","entrevist","podcast","bate-papo","bate papo"]}
+     termos:["de frente","entrevist","bate-papo","bate papo"]},
+    /* Estas três não são pastas numeradas da mãe: puxam por pasta de origem
+       no Drive, casando o nome do segmento inteiro — senão "[FD] RGV" levaria
+       junto tudo que está em "[FD] RGV PROCESSOS". */
+    {id:"1TMUQ9z7627WmqgbOnPoOXcHJ6OwkcrBX", num:"10", nome:"Podcasts",
+     caminhos:["[FD] PODCAST"], termos:["podcast"]},
+    {id:"1-yYD5csQxjQsYAfyWS46spbipNR8MukP", num:"11", nome:"RGVs",
+     caminhos:["[FD] RGV"], termos:["pgm rgv"]},
+    {id:"1Po-x6k0ejMM36Ljts4BMY1rw13VGW8ym", num:"12", nome:"Clube R1",
+     caminhos:["[FD] CLUBE R1"], termos:["clube r1","preço do tempo","preco do tempo"]}
   ];
   var $=function(id){return document.getElementById(id);};
   var urlPasta=function(id){ return "https://drive.google.com/drive/folders/"+id; };
@@ -1230,6 +1239,10 @@ tr.ouro td:first-child{box-shadow:inset 3px 0 0 var(--ouro)}
   }
   function casa(v,p){
     if((v.p||"").indexOf(p.num+".")===0) return 3;
+    if(p.caminhos && p.caminhos.length){
+      var seg=(v.p||"").split(" / ");
+      for(var k=0;k<p.caminhos.length;k++) if(seg.indexOf(p.caminhos[k])>=0) return 3;
+    }
     if(v.tema && v.tema.toLowerCase()===p.nome.toLowerCase()) return 2;
     var a=alvo(v);
     for(var i=0;i<p.termos.length;i++) if(a.indexOf(p.termos[i])>=0) return 1;
@@ -1295,7 +1308,8 @@ tr.ouro td:first-child{box-shadow:inset 3px 0 0 var(--ouro)}
     if(p.num!=="00"){
       var tb=document.createElement("div"); tb.className="termos";
       var lb=document.createElement("span"); lb.className="lb"; lb.textContent="Puxa por"; tb.appendChild(lb);
-      [["pasta "+p.num+" no Drive"],["tag: "+p.nome]].forEach(function(x){
+      var fonte = (p.caminhos && p.caminhos.length) ? p.caminhos.join(" · ") : "pasta "+p.num+" no Drive";
+      [[fonte],["tag: "+p.nome]].forEach(function(x){
         var e=document.createElement("span"); e.className="termo";
         e.style.color="var(--red)"; e.style.borderColor="rgba(254,0,38,.4)";
         e.textContent=x[0]; tb.appendChild(e);
