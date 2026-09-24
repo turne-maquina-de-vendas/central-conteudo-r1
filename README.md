@@ -81,18 +81,32 @@ dados/backup-*.json    export dos dados no dia da migração
 
 ## Manutenção
 
-**O acervo é uma foto** tirada do Drive em 23/09/2026. Vídeo novo não aparece
-sozinho:
+**O acervo se atualiza sozinho** por um Apps Script rodando de hora em hora na
+conta de alguém do time. Ele varre o Drive e manda o que mudou para
+`POST /api/acervo`; a tela lê de `GET /api/acervo`, com o `acervo.json`
+estático de rede de segurança se a API cair.
+
+Para ligar — uma vez só:
+
+1. `script.google.com` → Novo projeto → cole `ferramentas/sincronizar-drive.gs`
+2. Troque `SEGREDO` no script por um valor longo, e ponha o **mesmo** valor na
+   Vercel em `SINCRONIA_TOKEN` (Settings → Environment Variables)
+3. Rode `sincronizarTudo()` uma vez — na primeira vez o Google pede autorização
+4. Rode `instalarGatilho()` uma vez
+
+Por que Apps Script e não a API do Drive: a API exige projeto no Google Cloud e
+credencial, e mesmo assim **não enxerga o Drive compartilhado de eventos**, que é
+restrito. O Apps Script roda como uma pessoa do time e vê o que ela vê.
+
+O gatilho de hora em hora só olha o que mudou desde a última execução — termina
+em segundos. A varredura completa é a exceção e sabe retomar de onde parou
+quando o Apps Script corta em 6 minutos.
+
+Varredura manual, sem Apps Script (só alcança a pasta mãe, que é pública):
 
 ```bash
 python3 ferramentas/varrer-drive.py
 ```
-
-Depois regere o `acervo.json` (id, título, pasta, data) e **suba o número da
-versão** no `fetch("acervo.json?v=N")` dentro de `public/index.html` — o header é
-`max-age=3600` e sem isso o navegador serve o arquivo velho por uma hora. A
-varredura usa `drive.google.com/embeddedfolderview`, que dispensa credencial
-porque a pasta mãe está compartilhada por link.
 
 **Mapa de produto incompleto.** `MAPA_PRODUTO` no `index.html` deduz o produto
 pela pasta do Drive. Onze pastas ainda não têm produto definido — entre elas
