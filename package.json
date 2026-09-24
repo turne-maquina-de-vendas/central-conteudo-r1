@@ -1,0 +1,10 @@
+{
+  "name": "central-conteudo-r1",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Central de Conteudo R1 - decupagem do acervo do Drive, fila de edicao e POP",
+  "dependencies": {
+    "@neondatabase/serverless": "^1.1.0"
+  }
+}
