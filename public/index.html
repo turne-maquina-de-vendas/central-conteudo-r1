@@ -1257,8 +1257,10 @@ tr.ouro td:first-child{box-shadow:inset 3px 0 0 var(--ouro)}
     {id:"1f3wtInXkRhL6u7vt_9JG-RtHaixuKOmj", num:"06", nome:"Proibido Perder Venda",
      termos:["vend","comercial","negociaç","negociac"]},
     {id:"1EkzZNzuDLFnsLx3xVZAgP21E2fhEXKSw", num:"07", nome:"Depoimentos",
+     caminhos:["DEPOIMENTOS 🥇🥇🥇"],
      termos:["depoiment","caso de sucesso","história de","historia de"]},
     {id:"1wdwYVhyrGPcocAtd35SEyOPImP2vf6bz", num:"08", nome:"Palestrantes",
+     caminhos:["[FD] PALESTRAS"],
      termos:["palestr","evento","congresso"]},
     {id:"1CXJy-bhZipEaUdhx_oVP7yk_886MZFFf", num:"09", nome:"De Frente com Ricardo",
      termos:["de frente","entrevist","bate-papo","bate papo"]},
@@ -1996,7 +1998,7 @@ tr.ouro td:first-child{box-shadow:inset 3px 0 0 var(--ouro)}
        estático fica de rede de segurança se a API estiver fora */
     fetch("/api/acervo")
       .then(function(r){ if(!r.ok) throw new Error(r.status); return r.json(); })
-      .catch(function(){ return fetch("acervo.json?v=2",{cache:"force-cache"}).then(function(r){ return r.json(); }); })
+      .catch(function(){ return fetch("acervo.json?v=3",{cache:"force-cache"}).then(function(r){ return r.json(); }); })
       .then(function(j){
         if(!Array.isArray(j) || !j.length) throw new Error("acervo vazio");
         acervo=j; prontoDados=true;
