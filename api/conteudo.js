@@ -17,14 +17,39 @@ import { neon } from "@neondatabase/serverless";
    ambiente ainda não chegou, e o erro que sobra não diz nada. Assim o
    problema volta como JSON legível. */
 let _sql = null;
+
+/* A integração do Neon na Vercel prefixa a variável com o nome do banco —
+   aqui ela chegou como centralconteudo_DATABASE_URL, não DATABASE_URL.
+   Então em vez de exigir um nome exato, procuramos qualquer variável que
+   termine em DATABASE_URL ou POSTGRES_URL, ignorando as versões sem
+   pooler (função serverless abre conexão a cada chamada; sem o pooler o
+   limite do Neon estoura). */
+function acharUrl() {
+  const env = process.env;
+  if (env.DATABASE_URL) return { nome: "DATABASE_URL", url: env.DATABASE_URL };
+  if (env.POSTGRES_URL) return { nome: "POSTGRES_URL", url: env.POSTGRES_URL };
+  const nomes = Object.keys(env).filter(
+    (k) => /(DATABASE_URL|POSTGRES_URL)$/.test(k) &&
+           !/(UNPOOLED|NON_POOLING|NO_SSL|PRISMA|JDBC)/i.test(k)
+  );
+  if (nomes.length) return { nome: nomes[0], url: env[nomes[0]] };
+  const sobra = Object.keys(env).filter((k) => /(DATABASE_URL|POSTGRES_URL)/.test(k));
+  return { nome: sobra[0] || null, url: sobra[0] ? env[sobra[0]] : null };
+}
+
 function conectar() {
   if (_sql) return _sql;
-  const url = process.env.DATABASE_URL || process.env.POSTGRES_URL;
+  const { nome, url } = acharUrl();
   if (!url) {
-    const e = new Error("DATABASE_URL não está definida nas variáveis de ambiente do projeto");
+    const vistas = Object.keys(process.env).filter((k) => /DATABASE|POSTGRES|NEON/i.test(k));
+    const e = new Error(
+      "nenhuma variável de conexão encontrada" +
+      (vistas.length ? ` — parecidas no ambiente: ${vistas.join(", ")}` : "")
+    );
     e.semBanco = true;
     throw e;
   }
+  console.log("[conteudo] conectando por", nome);
   _sql = neon(url);
   return _sql;
 }
