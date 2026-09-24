@@ -26,15 +26,18 @@ let _sql = null;
    limite do Neon estoura). */
 function acharUrl() {
   const env = process.env;
-  if (env.DATABASE_URL) return { nome: "DATABASE_URL", url: env.DATABASE_URL };
-  if (env.POSTGRES_URL) return { nome: "POSTGRES_URL", url: env.POSTGRES_URL };
-  const nomes = Object.keys(env).filter(
-    (k) => /(DATABASE_URL|POSTGRES_URL)$/.test(k) &&
-           !/(UNPOOLED|NON_POOLING|NO_SSL|PRISMA|JDBC)/i.test(k)
-  );
-  if (nomes.length) return { nome: nomes[0], url: env[nomes[0]] };
-  const sobra = Object.keys(env).filter((k) => /(DATABASE_URL|POSTGRES_URL)/.test(k));
-  return { nome: sobra[0] || null, url: sobra[0] ? env[sobra[0]] : null };
+  /* Vale a que TEM valor, não a que tem o nome certo: aqui existiam as
+     duas, e a DATABASE_URL sem prefixo estava vazia. */
+  const vale = (k) => typeof env[k] === "string" && /^postgres(ql)?:\/\//.test(env[k].trim());
+  for (const k of ["DATABASE_URL", "POSTGRES_URL"]) if (vale(k)) return { nome: k, url: env[k].trim() };
+
+  /* Sem pooler a função serverless estoura o limite de conexões do Neon,
+     então as UNPOOLED ficam por último. */
+  const semPooler = /(UNPOOLED|NON_POOLING|NO_SSL|PRISMA|JDBC)/i;
+  const todas = Object.keys(env).filter((k) => /(DATABASE_URL|POSTGRES_URL)/.test(k) && vale(k));
+  const boas = todas.filter((k) => !semPooler.test(k));
+  const k = boas[0] || todas[0];
+  return k ? { nome: k, url: env[k].trim() } : { nome: null, url: null };
 }
 
 function conectar() {
